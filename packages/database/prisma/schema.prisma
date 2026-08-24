@@ -1,0 +1,362 @@
+// This is the ERB Prisma schema — the single source of truth for the database.
+// Uses PostgreSQL 16 with UUIDs as primary keys throughout.
+
+generator client {
+  provider = "prisma-client-js"
+  output   = "../node_modules/.prisma/client"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ============================================================
+// ENUMS
+// ============================================================
+
+enum UserRole {
+  CUSTOMER
+  SHOP_OWNER
+  ADMIN
+}
+
+enum ShopStatus {
+  ACTIVE
+  INACTIVE
+  SUSPENDED
+  PENDING_APPROVAL
+}
+
+enum PrinterStatus {
+  ONLINE
+  OFFLINE
+  ERROR
+  PAUSED
+  UNKNOWN
+}
+
+enum OrderStatus {
+  CREATED
+  UPLOADED
+  WAITING_FOR_SHOP
+  ACCEPTED
+  REJECTED
+  QUEUED
+  PRINTING
+  COMPLETED
+  FAILED
+  CANCELLED
+}
+
+enum PrintJobStatus {
+  QUEUED
+  CLAIMING
+  PRINTING
+  COMPLETED
+  FAILED
+  CANCELLED
+}
+
+// ============================================================
+// USERS
+// ============================================================
+
+model User {
+  id           String   @id @default(uuid()) @db.Uuid
+  name         String
+  email        String   @unique
+  phone        String?
+  passwordHash String?  // null when using OAuth
+  role         UserRole @default(CUSTOMER)
+  emailVerified DateTime?
+  isActive     Boolean  @default(true)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  // Relations
+  shops        Shop[]
+  documents    Document[]
+  orders       Order[]
+  auditLogs    AuditLog[]
+
+  @@index([email])
+  @@index([role])
+  @@map("users")
+}
+
+// ============================================================
+// SHOPS
+// ============================================================
+
+model Shop {
+  id          String     @id @default(uuid()) @db.Uuid
+  ownerId     String     @db.Uuid
+  name        String
+  description String?
+  address     String
+  city        String?
+  state       String?
+  country     String     @default("India")
+  postalCode  String?
+  latitude    Float?
+  longitude   Float?
+  phone       String?
+  email       String?
+  status      ShopStatus @default(PENDING_APPROVAL)
+  logoUrl     String?
+  createdAt   DateTime   @default(now())
+  updatedAt   DateTime   @updatedAt
+
+  // Relations
+  owner        User           @relation(fields: [ownerId], references: [id])
+  printers     Printer[]
+  orders       Order[]
+  pricingRules PricingRule[]
+
+  @@index([ownerId])
+  @@index([status])
+  @@index([latitude, longitude])
+  @@map("shops")
+}
+
+// ============================================================
+// PRINTERS
+// ============================================================
+
+model Printer {
+  id           String        @id @default(uuid()) @db.Uuid
+  shopId       String        @db.Uuid
+  name         String        // human-readable name set by shop owner
+  model        String?       // e.g. "Canon PIXMA G7070"
+  manufacturer String?       // e.g. "Canon"
+  serialNumber String?
+  status       PrinterStatus @default(UNKNOWN)
+  agentId      String?       // ID of the print agent managing this printer
+  isEnabled    Boolean       @default(true)
+  lastSeenAt   DateTime?
+  errorMessage String?       // last error from agent
+  createdAt    DateTime      @default(now())
+  updatedAt    DateTime      @updatedAt
+
+  // Relations
+  shop         Shop               @relation(fields: [shopId], references: [id])
+  capabilities PrinterCapability?
+  printJobs    PrintJob[]
+  pricingRules PricingRule[]
+
+  @@index([shopId])
+  @@index([status])
+  @@index([agentId])
+  @@map("printers")
+}
+
+// ============================================================
+// PRINTER CAPABILITIES
+// ============================================================
+// One-to-one with Printer. Stores what the printer can do.
+// supportsColor, supportsDuplex are normalized booleans for DB queries.
+// Full capability detail is in capabilitiesJson (JSONB).
+
+model PrinterCapability {
+  id                      String   @id @default(uuid()) @db.Uuid
+  printerId               String   @unique @db.Uuid
+  // Normalized searchable fields
+  supportsColor           Boolean  @default(false)
+  supportsDuplex          Boolean  @default(false)
+  supportsA3              Boolean  @default(false)
+  supportsA4              Boolean  @default(true)
+  maxCopies               Int      @default(99)
+  maxResolutionDpi        Int?
+  // Full structured capabilities (JSONB)
+  // Matches the PrinterCapabilities interface in @erb/types
+  capabilitiesJson        Json     @default("{}")
+  // Source of truth: "manual" (set by owner) or "auto" (detected by agent)
+  detectionMethod         String   @default("manual")
+  lastDetectedAt          DateTime?
+  createdAt               DateTime @default(now())
+  updatedAt               DateTime @updatedAt
+
+  printer Printer @relation(fields: [printerId], references: [id], onDelete: Cascade)
+
+  @@map("printer_capabilities")
+}
+
+// ============================================================
+// DOCUMENTS
+// ============================================================
+// Stores metadata about uploaded PDFs. Actual bytes in object storage.
+
+model Document {
+  id               String    @id @default(uuid()) @db.Uuid
+  userId           String    @db.Uuid
+  originalFilename String    // sanitized display name
+  storageKey       String    @unique // UUID-based path in object storage, never user-supplied
+  mimeType         String    @default("application/pdf")
+  sizeBytes        BigInt
+  pageCount        Int?
+  checksum         String    // SHA-256 of file content
+  uploadedAt       DateTime  @default(now())
+  expiresAt        DateTime? // documents auto-expire; null = permanent
+
+  // Relations
+  user   User    @relation(fields: [userId], references: [id])
+  orders Order[]
+
+  @@index([userId])
+  @@index([storageKey])
+  @@index([expiresAt])
+  @@map("documents")
+}
+
+// ============================================================
+// ORDERS
+// ============================================================
+
+model Order {
+  id                String      @id @default(uuid()) @db.Uuid
+  publicOrderNumber String      @unique // ERB-XXXXXX human-readable
+  userId            String      @db.Uuid
+  shopId            String      @db.Uuid
+  documentId        String      @db.Uuid
+  status            OrderStatus @default(CREATED)
+  // Price snapshot at time of order creation (never changes after)
+  totalAmount       Decimal     @db.Decimal(10, 2) @default(0)
+  currency          String      @default("INR")
+  priceBreakdown    Json?       // Full PriceBreakdown snapshot
+  idempotencyKey    String?     @unique // prevents double-submission
+  notes             String?
+  createdAt         DateTime    @default(now())
+  updatedAt         DateTime    @updatedAt
+
+  // Relations
+  user      User       @relation(fields: [userId], references: [id])
+  shop      Shop       @relation(fields: [shopId], references: [id])
+  document  Document   @relation(fields: [documentId], references: [id])
+  printJobs PrintJob[]
+
+  @@index([userId])
+  @@index([shopId])
+  @@index([status])
+  @@index([publicOrderNumber])
+  @@index([idempotencyKey])
+  @@map("orders")
+}
+
+// ============================================================
+// PRINT JOBS
+// ============================================================
+// Core queue entity. Each job is independent and uniquely identified.
+// CRITICAL: No global "currentJob" variable — every job is a DB record.
+
+model PrintJob {
+  id               String         @id @default(uuid()) @db.Uuid
+  orderId          String         @db.Uuid
+  printerId        String         @db.Uuid
+  status           PrintJobStatus @default(QUEUED)
+  // The exact print options requested — stored as JSONB snapshot
+  requestedOptions Json           // matches PrintOptions interface
+  priority         Int            @default(0)  // higher = sooner
+  attemptCount     Int            @default(0)
+  maxAttempts      Int            @default(3)
+  // Worker/agent tracking
+  workerId         String?        // which worker claimed this job
+  agentId          String?        // which print agent is processing
+  // Timestamps
+  queuedAt         DateTime       @default(now())
+  startedAt        DateTime?
+  completedAt      DateTime?
+  failedAt         DateTime?
+  // Error info
+  errorCode        String?
+  errorMessage     String?
+  errorDetails     Json?
+  createdAt        DateTime       @default(now())
+  updatedAt        DateTime       @updatedAt
+
+  // Relations
+  order     Order         @relation(fields: [orderId], references: [id])
+  printer   Printer       @relation(fields: [printerId], references: [id])
+  events    PrintJobEvent[]
+
+  @@index([status, priority(sort: Desc)])   // the queue access pattern
+  @@index([orderId])
+  @@index([printerId])
+  @@index([workerId])
+  @@map("print_jobs")
+}
+
+// ============================================================
+// PRINT JOB EVENTS
+// ============================================================
+// Immutable event log — never update or delete rows here.
+
+model PrintJobEvent {
+  id         String   @id @default(uuid()) @db.Uuid
+  printJobId String   @db.Uuid
+  eventType  String   // e.g. "job.queued", "job.claimed", "job.printing", "job.completed", "job.failed"
+  message    String?
+  metadata   Json?    // structured context (worker ID, agent ID, error details, etc.)
+  createdAt  DateTime @default(now())
+
+  printJob PrintJob @relation(fields: [printJobId], references: [id], onDelete: Cascade)
+
+  @@index([printJobId])
+  @@index([eventType])
+  @@map("print_job_events")
+}
+
+// ============================================================
+// PRICING RULES
+// ============================================================
+// Shop-level (and optionally printer-level) pricing config.
+
+model PricingRule {
+  id               String   @id @default(uuid()) @db.Uuid
+  shopId           String   @db.Uuid
+  printerId        String?  @db.Uuid  // null = applies to all shop printers
+  name             String   @default("Default")
+  isDefault        Boolean  @default(false)
+  // Per-page base prices (in paise / smallest currency unit)
+  bwPricePerPage   Int      @default(100)   // e.g. 100 paise = ₹1.00
+  colorPricePerPage Int     @default(500)   // e.g. 500 paise = ₹5.00
+  // Surcharges and discounts (JSONB for flexibility)
+  paperSizePricing Json     @default("{}")  // { "A3": 200, "A4": 0 } extra paise per page
+  qualityPricing   Json     @default("{}")  // { "HIGH": 100 } extra paise per page
+  mediaPricing     Json     @default("{}")  // { "GLOSSY": 300 } extra paise per page
+  duplexDiscountPaise Int   @default(0)     // discount per duplex sheet
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+
+  shop    Shop     @relation(fields: [shopId], references: [id])
+  printer Printer? @relation(fields: [printerId], references: [id])
+
+  @@index([shopId])
+  @@index([printerId])
+  @@map("pricing_rules")
+}
+
+// ============================================================
+// AUDIT LOGS
+// ============================================================
+// Immutable record of important administrative/business actions.
+
+model AuditLog {
+  id         String   @id @default(uuid()) @db.Uuid
+  userId     String?  @db.Uuid  // who performed the action
+  entityType String   // "Order", "PrintJob", "Printer", "Shop", "User"
+  entityId   String   // UUID of the entity
+  action     String   // e.g. "order.accepted", "printer.disabled", "user.banned"
+  metadata   Json?    // any relevant context
+  ipAddress  String?
+  userAgent  String?
+  createdAt  DateTime @default(now())
+
+  user User? @relation(fields: [userId], references: [id])
+
+  @@index([userId])
+  @@index([entityType, entityId])
+  @@index([action])
+  @@index([createdAt])
+  @@map("audit_logs")
+}

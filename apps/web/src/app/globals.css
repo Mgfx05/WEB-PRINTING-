@@ -1,0 +1,317 @@
+@import "tailwindcss";
+
+/* ============================================================
+   ERB Design System
+   ============================================================
+
+   Color palette: Deep navy + Electric blue + Warm white
+   Typography: System sans-serif with Inter fallback
+   Motion: Purposeful, restrained
+   ============================================================ */
+
+@layer base {
+  :root {
+    /* Brand Colors */
+    --color-brand-50: #eff6ff;
+    --color-brand-100: #dbeafe;
+    --color-brand-200: #bfdbfe;
+    --color-brand-300: #93c5fd;
+    --color-brand-400: #60a5fa;
+    --color-brand-500: #3b82f6;
+    --color-brand-600: #2563eb;
+    --color-brand-700: #1d4ed8;
+    --color-brand-800: #1e40af;
+    --color-brand-900: #1e3a8a;
+
+    /* Neutral Palette */
+    --color-neutral-0: #ffffff;
+    --color-neutral-50: #f8fafc;
+    --color-neutral-100: #f1f5f9;
+    --color-neutral-200: #e2e8f0;
+    --color-neutral-300: #cbd5e1;
+    --color-neutral-400: #94a3b8;
+    --color-neutral-500: #64748b;
+    --color-neutral-600: #475569;
+    --color-neutral-700: #334155;
+    --color-neutral-800: #1e293b;
+    --color-neutral-900: #0f172a;
+    --color-neutral-950: #020617;
+
+    /* Status Colors */
+    --color-success: #10b981;
+    --color-success-light: #d1fae5;
+    --color-warning: #f59e0b;
+    --color-warning-light: #fef3c7;
+    --color-error: #ef4444;
+    --color-error-light: #fee2e2;
+    --color-info: #3b82f6;
+    --color-info-light: #dbeafe;
+
+    /* Semantic tokens — Light mode */
+    --background: var(--color-neutral-50);
+    --foreground: var(--color-neutral-900);
+    --card: var(--color-neutral-0);
+    --card-foreground: var(--color-neutral-900);
+    --border: var(--color-neutral-200);
+    --input: var(--color-neutral-200);
+    --primary: var(--color-brand-600);
+    --primary-foreground: var(--color-neutral-0);
+    --secondary: var(--color-neutral-100);
+    --secondary-foreground: var(--color-neutral-900);
+    --muted: var(--color-neutral-100);
+    --muted-foreground: var(--color-neutral-500);
+    --accent: var(--color-brand-50);
+    --accent-foreground: var(--color-brand-700);
+    --destructive: var(--color-error);
+    --ring: var(--color-brand-500);
+    --radius: 0.625rem;
+  }
+
+  .dark {
+    --background: var(--color-neutral-950);
+    --foreground: var(--color-neutral-50);
+    --card: var(--color-neutral-900);
+    --card-foreground: var(--color-neutral-50);
+    --border: var(--color-neutral-800);
+    --input: var(--color-neutral-800);
+    --primary: var(--color-brand-500);
+    --primary-foreground: var(--color-neutral-0);
+    --secondary: var(--color-neutral-800);
+    --secondary-foreground: var(--color-neutral-50);
+    --muted: var(--color-neutral-800);
+    --muted-foreground: var(--color-neutral-400);
+    --accent: var(--color-neutral-800);
+    --accent-foreground: var(--color-brand-400);
+    --destructive: #ef4444;
+    --ring: var(--color-brand-500);
+  }
+
+  * {
+    box-sizing: border-box;
+    border-color: var(--border);
+  }
+
+  body {
+    background-color: var(--background);
+    color: var(--foreground);
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Inter",
+      Roboto, Oxygen, Ubuntu, sans-serif;
+    font-feature-settings: "rlig" 1, "calt" 1;
+    line-height: 1.6;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  /* Focus styles */
+  :focus-visible {
+    outline: 2px solid var(--ring);
+    outline-offset: 2px;
+    border-radius: 4px;
+  }
+
+  /* Scrollbar styling */
+  ::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+  }
+  ::-webkit-scrollbar-track {
+    background: transparent;
+  }
+  ::-webkit-scrollbar-thumb {
+    background-color: var(--color-neutral-300);
+    border-radius: 3px;
+  }
+  .dark ::-webkit-scrollbar-thumb {
+    background-color: var(--color-neutral-700);
+  }
+}
+
+/* ============================================================
+   Component Utilities
+   ============================================================ */
+
+@layer components {
+  .container-app {
+    max-width: 1280px;
+    margin: 0 auto;
+    padding: 0 1.5rem;
+  }
+
+  /* Card with consistent elevation */
+  .card-base {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06), 0 1px 2px rgba(0, 0, 0, 0.04);
+  }
+
+  .card-hover {
+    transition: box-shadow 0.2s ease, transform 0.2s ease;
+  }
+  .card-hover:hover {
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08), 0 2px 4px rgba(0, 0, 0, 0.06);
+    transform: translateY(-1px);
+  }
+
+  /* Status badges */
+  .badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.25rem;
+    padding: 0.2rem 0.625rem;
+    border-radius: 9999px;
+    font-size: 0.75rem;
+    font-weight: 500;
+    line-height: 1.4;
+  }
+
+  .badge-success {
+    background: var(--color-success-light);
+    color: #065f46;
+  }
+  .badge-warning {
+    background: var(--color-warning-light);
+    color: #92400e;
+  }
+  .badge-error {
+    background: var(--color-error-light);
+    color: #991b1b;
+  }
+  .badge-info {
+    background: var(--color-info-light);
+    color: #1e40af;
+  }
+  .badge-neutral {
+    background: var(--color-neutral-100);
+    color: var(--color-neutral-600);
+  }
+
+  /* Printer status dot */
+  .status-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    flex-shrink: 0;
+  }
+  .status-dot-online {
+    background: var(--color-success);
+    box-shadow: 0 0 0 2px rgba(16, 185, 129, 0.2);
+    animation: pulse-green 2s infinite;
+  }
+  .status-dot-offline {
+    background: var(--color-neutral-400);
+  }
+  .status-dot-error {
+    background: var(--color-error);
+    animation: pulse-red 1s infinite;
+  }
+
+  /* Form elements */
+  .input-base {
+    width: 100%;
+    padding: 0.5rem 0.75rem;
+    background: var(--card);
+    border: 1px solid var(--input);
+    border-radius: calc(var(--radius) - 2px);
+    font-size: 0.875rem;
+    color: var(--foreground);
+    transition: border-color 0.15s, box-shadow 0.15s;
+  }
+  .input-base:focus {
+    outline: none;
+    border-color: var(--primary);
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.12);
+  }
+  .input-base::placeholder {
+    color: var(--muted-foreground);
+  }
+
+  /* Loading skeleton */
+  .skeleton {
+    background: linear-gradient(
+      90deg,
+      var(--color-neutral-200) 25%,
+      var(--color-neutral-100) 50%,
+      var(--color-neutral-200) 75%
+    );
+    background-size: 200% 100%;
+    animation: shimmer 1.5s infinite;
+    border-radius: var(--radius);
+  }
+  .dark .skeleton {
+    background: linear-gradient(
+      90deg,
+      var(--color-neutral-800) 25%,
+      var(--color-neutral-700) 50%,
+      var(--color-neutral-800) 75%
+    );
+    background-size: 200% 100%;
+  }
+
+  /* Step indicator */
+  .step-indicator {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
+  .step-circle {
+    width: 2rem;
+    height: 2rem;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.8125rem;
+    font-weight: 600;
+  }
+  .step-circle-active {
+    background: var(--primary);
+    color: var(--primary-foreground);
+  }
+  .step-circle-done {
+    background: var(--color-success);
+    color: white;
+  }
+  .step-circle-pending {
+    background: var(--muted);
+    color: var(--muted-foreground);
+    border: 2px solid var(--border);
+  }
+}
+
+/* ============================================================
+   Animations
+   ============================================================ */
+
+@keyframes shimmer {
+  from { background-position: 200% 0; }
+  to { background-position: -200% 0; }
+}
+
+@keyframes pulse-green {
+  0%, 100% { box-shadow: 0 0 0 2px rgba(16, 185, 129, 0.2); }
+  50% { box-shadow: 0 0 0 5px rgba(16, 185, 129, 0); }
+}
+
+@keyframes pulse-red {
+  0%, 100% { box-shadow: 0 0 0 2px rgba(239, 68, 68, 0.2); }
+  50% { box-shadow: 0 0 0 5px rgba(239, 68, 68, 0); }
+}
+
+@keyframes fade-in {
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes slide-in-right {
+  from { opacity: 0; transform: translateX(16px); }
+  to { opacity: 1; transform: translateX(0); }
+}
+
+.animate-fade-in {
+  animation: fade-in 0.3s ease forwards;
+}
+
+.animate-slide-in {
+  animation: slide-in-right 0.25s ease forwards;
+}
