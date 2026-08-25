@@ -23,7 +23,7 @@ export async function GET(req: NextRequest) {
           printers: {
             some: {
               isEnabled: true,
-              status: "ONLINE",
+              status: "ONLINE" as const,
               ...(hasColor || hasDuplex
                 ? {
                     capabilities: {

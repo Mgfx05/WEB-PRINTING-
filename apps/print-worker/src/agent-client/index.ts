@@ -35,7 +35,7 @@ class PrintAgentClient {
       return process.env.PRINT_AGENT_URL;
     }
     // Look up agent URL from database
-    const { prisma } = await import("@erb/database/client");
+    const { prisma } = await import("@erb/database");
     const printer = await prisma.printer.findFirst({
       where: { agentId },
     });

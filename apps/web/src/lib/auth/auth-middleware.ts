@@ -10,7 +10,7 @@ import NextAuth from "next-auth";
 
 export const { auth } = NextAuth({
   session: { strategy: "jwt" },
-  secret: process.env.NEXTAUTH_SECRET,
+  secret: process.env.AUTH_SECRET || process.env.NEXTAUTH_SECRET || "erb-dev-auth-secret-key-32chars-long-minimum",
   providers: [],
   trustHost: true,
 });

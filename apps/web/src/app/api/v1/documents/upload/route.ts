@@ -84,6 +84,34 @@ export async function POST(req: NextRequest) {
       "application/pdf"
     );
 
+    // Extract page count from PDF content
+    let detectedPages: number | null = null;
+    try {
+      const content = buffer.toString("latin1");
+      const countMatch =
+        content.match(/\/Type\s*\/Pages[^>]*\/Count\s+(\d+)/i) ||
+        content.match(/\/Count\s+(\d+)[^>]*\/Type\s*\/Pages/i);
+      if (countMatch && countMatch[1]) {
+        const count = parseInt(countMatch[1], 10);
+        if (count > 0 && count < 10000) {
+          detectedPages = count;
+        }
+      }
+      if (!detectedPages) {
+        const pageMatches = content.match(/\/Type\s*\/Page\b/g);
+        if (pageMatches && pageMatches.length > 0) {
+          detectedPages = pageMatches.length;
+        }
+      }
+    } catch {
+      detectedPages = null;
+    }
+
+    const clientPageCount = formData.get("pageCount");
+    const finalPageCount =
+      detectedPages ??
+      (clientPageCount ? parseInt(String(clientPageCount), 10) : 1);
+
     // Create document record in DB
     const document = await prisma.document.create({
       data: {
@@ -92,6 +120,7 @@ export async function POST(req: NextRequest) {
         storageKey,
         mimeType: "application/pdf",
         sizeBytes: BigInt(file.size),
+        pageCount: Math.max(1, finalPageCount || 1),
         checksum,
         // Documents expire in 7 days if not ordered
         expiresAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),

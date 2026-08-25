@@ -179,7 +179,7 @@ export async function PATCH(req: NextRequest, { params }: RouteParams) {
         documentId: order.documentId,
         shopId: order.shopId,
         printerId: printJob.printerId,
-        options: printJob.requestedOptions as Parameters<typeof enqueuePrintJob>[0]["options"],
+        options: printJob.requestedOptions as unknown as Parameters<typeof enqueuePrintJob>[0]["options"],
         attemptCount: 0,
       });
 

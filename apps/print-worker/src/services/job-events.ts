@@ -1,4 +1,4 @@
-import { prisma } from "@erb/database/client";
+import { prisma, Prisma } from "@erb/database";
 
 /**
  * Records an immutable event in the print_job_events table.
@@ -15,7 +15,7 @@ export async function recordJobEvent(
       printJobId,
       eventType,
       message,
-      metadata: metadata ?? {},
+      metadata: (metadata ?? {}) as Prisma.InputJsonValue,
     },
   });
 }

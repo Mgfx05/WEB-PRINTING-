@@ -1,5 +1,5 @@
 import { Job } from "bullmq";
-import { prisma } from "@erb/database/client";
+import { prisma, Prisma } from "@erb/database";
 import { PrintJobStatus, OrderStatus, ErrorCodes } from "@erb/types";
 import type { PrintJobPayload } from "@erb/types";
 import { createLogger } from "../services/logger";
@@ -43,7 +43,7 @@ export async function processJob(job: Job<PrintJobPayload>): Promise<void> {
   // ── Step 1: Atomic claim in database ──────────────────────────────────────
   // Use a transaction with a conditional UPDATE to prevent two workers from
   // simultaneously claiming the same job (belt-and-suspenders on top of BullMQ).
-  const claimed = await prisma.$transaction(async (tx) => {
+  const claimed = await prisma.$transaction(async (tx: Prisma.TransactionClient) => {
     const updated = await tx.printJob.updateMany({
       where: {
         id: printJobId,
@@ -181,7 +181,7 @@ export async function processJob(job: Job<PrintJobPayload>): Promise<void> {
     const currentAttempt = (job.attemptsMade ?? 0) + 1;
     const isRetryable = currentAttempt < MAX_ATTEMPTS;
 
-    await prisma.$transaction(async (tx) => {
+    await prisma.$transaction(async (tx: Prisma.TransactionClient) => {
       await tx.printJob.update({
         where: { id: printJobId },
         data: {

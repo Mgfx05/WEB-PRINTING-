@@ -1,4 +1,3 @@
-import { createClient } from "redis";
 import IORedis from "ioredis";
 import { createLogger } from "./logger";
 

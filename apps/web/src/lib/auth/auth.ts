@@ -7,6 +7,7 @@ import { LoginSchema } from "@erb/validation";
 import type { UserRole } from "@erb/types";
 
 export const { handlers, auth, signIn, signOut } = NextAuth({
+  secret: process.env.AUTH_SECRET || process.env.NEXTAUTH_SECRET || "erb-dev-auth-secret-key-32chars-long-minimum",
   adapter: PrismaAdapter(prisma),
 
   // Use JWT sessions (stateless, no session table required)
