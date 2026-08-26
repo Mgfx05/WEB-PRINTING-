@@ -309,8 +309,8 @@ function UploadWizardContent() {
       return;
     }
 
-    if (selectedFile.size > 50 * 1024 * 1024) {
-      setUploadError("File size exceeds the 50MB maximum limit.");
+    if (selectedFile.size > 25 * 1024 * 1024) {
+      setUploadError("File size exceeds the 25MB maximum limit.");
       return;
     }
 
@@ -606,7 +606,7 @@ function UploadWizardContent() {
                   Step 1: Upload your PDF Document
                 </h2>
                 <p style={{ fontSize: "0.875rem", color: "var(--muted-foreground)" }}>
-                  Upload the file you wish to print. We support standard PDF documents up to 50MB.
+                  Upload the file you wish to print. We support standard PDF documents up to 25MB.
                 </p>
               </div>
 
@@ -691,7 +691,7 @@ function UploadWizardContent() {
                         margin: "0 auto",
                       }}
                     >
-                      Supports high-resolution vector and document PDFs up to 50MB. Encrypted in transit.
+                      Supports high-resolution vector and document PDFs up to 25MB. Encrypted in transit.
                     </p>
                   </div>
 

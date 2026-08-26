@@ -26,7 +26,7 @@ const FEATURES = [
     icon: UploadIcon,
     title: "Instant PDF Analysis & Upload",
     description:
-      "Upload PDFs up to 50MB with automated page count detection and SHA-256 verification.",
+      "Upload PDFs up to 25MB with automated page count detection and SHA-256 verification.",
   },
   {
     icon: ZapIcon,
@@ -90,7 +90,7 @@ const FAQS = [
   },
   {
     q: "What file formats are supported?",
-    a: "We currently support standard and high-resolution PDF documents up to 50MB. Vector graphics, reports, thesis documents, blueprints, and standard documents are fully supported.",
+    a: "We currently support standard and high-resolution PDF documents up to 25MB. Vector graphics, reports, thesis documents, blueprints, and standard documents are fully supported.",
   },
   {
     q: "How is the pricing calculated?",
@@ -343,7 +343,7 @@ export default function LandingPage() {
 
           <div>
             <div style={{ fontSize: "2.25rem", fontWeight: 900, color: "var(--foreground)" }}>
-              50MB
+              25MB
             </div>
             <p style={{ fontSize: "0.8125rem", color: "var(--muted-foreground)", fontWeight: 500, marginTop: "0.2rem" }}>
               Max High-Res PDF Size

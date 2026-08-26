@@ -5,7 +5,7 @@ import { prisma } from "@erb/database/client";
 import { createApiResponse, createApiError } from "@/lib/api/response";
 import { ErrorCodes } from "@erb/types";
 
-const MAX_FILE_SIZE = Number(process.env.MAX_UPLOAD_SIZE_BYTES ?? 52428800); // 50MB
+const MAX_FILE_SIZE = Number(process.env.MAX_UPLOAD_SIZE_BYTES ?? 26214400); // 25MB
 
 /**
  * POST /api/v1/documents/upload

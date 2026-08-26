@@ -171,7 +171,7 @@ export const DocumentUploadSchema = z.object({
     .number()
     .int()
     .min(1)
-    .max(Number(process.env.MAX_UPLOAD_SIZE_BYTES ?? 52428800)),
+    .max(Number(process.env.MAX_UPLOAD_SIZE_BYTES ?? 26214400), "File size must not exceed 25MB"),
 });
 
 // ============================================================

@@ -123,7 +123,7 @@ describe("Validation Schemas", () => {
   });
 
   describe("DocumentUploadSchema", () => {
-    it("accepts valid PDF within 50MB limit", () => {
+    it("accepts valid PDF within 25MB limit", () => {
       const valid = {
         filename: "thesis_final.pdf",
         mimeType: "application/pdf",
@@ -131,6 +131,16 @@ describe("Validation Schemas", () => {
       };
       const result = DocumentUploadSchema.safeParse(valid);
       expect(result.success).toBe(true);
+    });
+
+    it("rejects PDF exceeding 25MB limit", () => {
+      const oversized = {
+        filename: "giant_atlas.pdf",
+        mimeType: "application/pdf",
+        sizeBytes: 30 * 1024 * 1024,
+      };
+      const result = DocumentUploadSchema.safeParse(oversized);
+      expect(result.success).toBe(false);
     });
 
     it("rejects non-PDF mime types", () => {
