@@ -229,7 +229,7 @@ AUTH_SECRET="jyE69a4TyR87hZRy2Oa2WURmA4J0YiwdGZYJc2ZIriI="
 # ============================================================
 STORAGE_PROVIDER="local"
 STORAGE_LOCAL_PATH="./uploads"
-MAX_UPLOAD_SIZE_BYTES=52428800 # 50 Megabytes
+MAX_UPLOAD_SIZE_BYTES=26214400 # 25 Megabytes
 
 # ============================================================
 # Print Worker & Agent
@@ -332,7 +332,7 @@ The `pnpm db:seed` command creates the following ready-to-use testing accounts:
 Located at `/upload`, the print wizard walks customers through an intuitive ordering experience:
 
 1. **Step 1: Upload Document**:
-   - Drag & drop or browse for a PDF (up to 50MB).
+   - Drag & drop or browse for a PDF (up to 25MB).
    - Real-time client & server validation.
    - Shows extracted file size, page count, and SHA-256 checksum verification badge.
 2. **Step 2: Print Options**:
@@ -362,7 +362,7 @@ The PDF upload endpoint (`POST /api/v1/documents/upload`) implements strict secu
 [User Selects File]
          │
          ▼
-[Client Pre-Check]  ──> Checks format (.pdf, .PDF, application/pdf) & size (≤ 50MB)
+[Client Pre-Check]  ──> Checks format (.pdf, .PDF, application/pdf) & size (≤ 25MB)
          │
          ▼
 [POST /api/v1/documents/upload (Multipart FormData)]
@@ -382,7 +382,7 @@ If you encounter an upload issue, check the following common causes:
 - **Database is offline**: The backend saves document metadata to PostgreSQL. If Docker is stopped, the server logs `Upload failed: Can't reach database server at localhost:5432`. Ensure Docker is running (`docker compose up -d`).
 - **User is not signed in**: The API requires an active session. Log in first at `/auth/login` (e.g. with `customer@erb.local` / `Password123`).
 - **Invalid file header**: If the file is not a real PDF (e.g. a renamed `.txt` or corrupted file), the magic-byte validator rejects it.
-- **File size > 50MB**: The system enforces a 50MB limit by default. Adjust `MAX_UPLOAD_SIZE_BYTES` in `.env` if larger documents are required.
+- **File size > 25MB**: The system enforces a 25MB limit by default. Adjust `MAX_UPLOAD_SIZE_BYTES` in `.env` if larger documents are required.
 
 ---
 
