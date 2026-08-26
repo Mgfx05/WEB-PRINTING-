@@ -299,7 +299,12 @@ function UploadWizardContent() {
   const handleUploadFile = async (selectedFile: File) => {
     setUploadError(null);
 
-    if (selectedFile.type !== "application/pdf" && !selectedFile.name.endsWith(".pdf")) {
+    const isPdf =
+      selectedFile.type === "application/pdf" ||
+      selectedFile.type === "application/x-pdf" ||
+      selectedFile.name.toLowerCase().endsWith(".pdf");
+
+    if (!isPdf) {
       setUploadError("Only PDF documents are supported for printing.");
       return;
     }
@@ -632,9 +637,15 @@ function UploadWizardContent() {
                   >
                     <input
                       type="file"
-                      accept="application/pdf"
+                      accept="application/pdf, .pdf"
                       id="pdf-upload-input"
                       onChange={handleFileChange}
+                      onDragOver={(e) => {
+                        e.preventDefault();
+                        setIsDragging(true);
+                      }}
+                      onDragLeave={() => setIsDragging(false)}
+                      onDrop={handleFileDrop}
                       style={{
                         position: "absolute",
                         inset: 0,

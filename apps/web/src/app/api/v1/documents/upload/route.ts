@@ -55,13 +55,14 @@ export async function POST(req: NextRequest) {
     const buffer = Buffer.from(arrayBuffer);
 
     // Validate actual PDF magic bytes (%PDF-)
-    // Do NOT trust the browser-supplied MIME type alone
-    const pdfMagic = buffer.subarray(0, 5).toString("ascii");
-    if (pdfMagic !== "%PDF-") {
+    // Per ISO 32000-1 § 7.5.2, %PDF- must appear within the first 1024 bytes
+    // (accommodating UTF-8 BOM, scanner preambles, or leading comments)
+    const header = buffer.subarray(0, 1024).toString("latin1");
+    if (!header.includes("%PDF-")) {
       return NextResponse.json(
         createApiError(
           ErrorCodes.INVALID_FILE_TYPE,
-          "File does not appear to be a valid PDF"
+          "File does not appear to be a valid PDF (missing %PDF- header)"
         ),
         { status: 400 }
       );
@@ -144,8 +145,12 @@ export async function POST(req: NextRequest) {
     );
   } catch (err) {
     console.error("[POST /api/v1/documents/upload]", err);
+    const errorMessage =
+      process.env.NODE_ENV === "development" && err instanceof Error
+        ? `Upload failed: ${err.message}`
+        : "Upload failed. Please try again.";
     return NextResponse.json(
-      createApiError(ErrorCodes.UPLOAD_FAILED, "Upload failed. Please try again."),
+      createApiError(ErrorCodes.UPLOAD_FAILED, errorMessage),
       { status: 500 }
     );
   }
