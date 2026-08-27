@@ -104,6 +104,10 @@ const FAQS = [
     q: "I own a print shop. How can I join?",
     a: "You can sign up as a Shop Owner by creating an account and completing the quick shop onboarding wizard. You will receive your dedicated shop dashboard to manage printers, pricing, and incoming orders.",
   },
+  {
+    q: "Are my uploaded files deleted after printing?",
+    a: "Yes. All uploaded documents are automatically and permanently deleted from our servers once your print job is completed or cancelled. We never retain your files beyond the scope of a single print job.",
+  },
 ];
 
 export default function LandingPage() {
