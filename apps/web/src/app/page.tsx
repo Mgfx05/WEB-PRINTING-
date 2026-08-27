@@ -162,7 +162,7 @@ export default function LandingPage() {
             }}
           >
             <SparklesIcon size={14} />
-            Next-Generation Cloud Print Network
+            India's Next-Generation Cloud Print Network
           </div>
 
           <h1
