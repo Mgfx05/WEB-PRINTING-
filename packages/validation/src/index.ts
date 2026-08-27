@@ -1,5 +1,6 @@
 // Shared Zod validation schemas used by both API handlers and frontend forms.
 // Keep in sync with @erb/types interfaces.
+// All monetary values (prices, discounts) are stored in paise (1 INR = 100 paise).
 
 import { z } from "zod";
 
@@ -181,6 +182,8 @@ export const DocumentUploadSchema = z.object({
 export const PaginationSchema = z.object({
   page: z.coerce.number().int().min(1).default(1),
   limit: z.coerce.number().int().min(1).max(100).default(20),
+  sortBy: z.string().max(50).optional(),
+  sortOrder: z.enum(["asc", "desc"]).default("desc"),
 });
 
 export type RegisterInput = z.infer<typeof RegisterSchema>;
