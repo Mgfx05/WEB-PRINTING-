@@ -2,6 +2,8 @@
 
 > **Production-grade on-demand cloud printing infrastructure** connecting customers with local, verified print shops for seamless PDF printing, real-time job queuing, and physical printer dispatch.
 
+<!-- Last updated: 2026-08-27 -->
+
 ---
 
 ## Table of Contents
