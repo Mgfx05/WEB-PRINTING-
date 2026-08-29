@@ -10,8 +10,14 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
   secret: process.env.AUTH_SECRET || process.env.NEXTAUTH_SECRET || "erb-dev-auth-secret-key-32chars-long-minimum",
   adapter: PrismaAdapter(prisma),
 
-  // Use JWT sessions (stateless, no session table required)
-  session: { strategy: "jwt" },
+  // Use JWT sessions (stateless, no session table required).
+  // maxAge: how long (seconds) a session stays valid after creation.
+  // updateAge: how often the JWT is refreshed on active requests.
+  session: {
+    strategy: "jwt",
+    maxAge: 7 * 24 * 60 * 60,   // 7 days
+    updateAge: 24 * 60 * 60,    // refresh token every 24 hours
+  },
 
   pages: {
     signIn: "/auth/login",
