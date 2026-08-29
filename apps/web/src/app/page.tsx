@@ -192,7 +192,7 @@ export default function LandingPage() {
             >
               Configure.
             </span>{" "}
-            Print Anywhere.
+            Print Smarter.
           </h1>
 
           <p
@@ -347,7 +347,7 @@ export default function LandingPage() {
 
           <div>
             <div style={{ fontSize: "2.25rem", fontWeight: 900, color: "var(--foreground)" }}>
-              25MB
+              50MB
             </div>
             <p style={{ fontSize: "0.8125rem", color: "var(--muted-foreground)", fontWeight: 500, marginTop: "0.2rem" }}>
               Max High-Res PDF Size
